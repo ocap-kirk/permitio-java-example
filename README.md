@@ -7,7 +7,11 @@ This Spring Boot API demonstrates the use of Permit.io permission checks via the
 1. Spring Boot 3.3.1
 1. Java 22 (built with `java version "22.0.1" 2024-04-16`)
 1. Permit.io PDP running on :7766
-    
+
+## Setup
+1. Copy the `permit_key` from the Permit.io dashboard
+1. Replace the value in [src/main/java/com/permit/check/example/ExampleApplication.java:31](src/main/java/com/permit/check/example/ExampleApplication.java:31 )
+1. Replace the value in the PDP call below.
 
 ## Steps to run
 1. Start the Permit.io PDP:
@@ -17,6 +21,7 @@ This Spring Boot API demonstrates the use of Permit.io permission checks via the
 
     `./mvnw spring-boot:run`
 1. Make API calls to test the permissions
+
 
 ## Example API calls
 ### RBAC+ABAC
