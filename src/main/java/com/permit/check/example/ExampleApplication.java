@@ -11,8 +11,6 @@ import io.permit.sdk.api.PermitApiError;
 import io.permit.sdk.api.PermitContextError;
 import io.permit.sdk.enforcement.Resource;
 import io.permit.sdk.enforcement.User;
-import io.permit.sdk.openapi.models.UserCreate;
-import io.permit.sdk.openapi.models.UserRead;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,23 +24,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class ExampleApplication {
        
     final Permit permit;
-    // final UserRead user;
 
     public ExampleApplication() {
         // init the permit SDK
         this.permit = new Permit(
-            new PermitConfig.Builder("permit_key_vresSm6t2q8BCW3xDHmTUa7dJO7OXsIGxNBDtUAeQkoM1hvMtkOCv6U449phGEJ11mW1Fn1IgXmCAR26EAM62p")
+            new PermitConfig.Builder("permit_key_abc")
 			.withPdpAddress("http://localhost:7766")
 			// optionally, if you wish to get more debug messages to your log, set this to true
 			.withDebugMode(true)
 			.build()
-        );
-		/*
-         * Frodo/High Potential: {"sub":"frodo@middle-earth.com","name":"Frodo Baggins","subscription":"High Potential"}
-         * Gimli/Sustain: {"sub":"gimli@middle-earth.com","name":"Gimli","subscription":"Sustain"}
-         * Gandalf/Core: {"sub":"gandalf@middle-earth.com","name":"Gandalf the Grey","subscription":"Core"}
-         * Aragorn/Flagship: {"sub":"aragorn@middle-earth.com","name":"Aragorn","subscription":"Flagship"}
-         */
+        );         
     }
 
     @GetMapping("/API/{num}")
