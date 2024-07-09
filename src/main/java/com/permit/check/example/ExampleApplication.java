@@ -3,6 +3,8 @@ package com.permit.check.example;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import java.io.IOException;
+import java.util.HashMap;
+
 import io.permit.sdk.Permit;
 import io.permit.sdk.PermitConfig;
 import io.permit.sdk.api.PermitApiError;
@@ -22,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @SpringBootApplication
 public class ExampleApplication {
-
+       
     final Permit permit;
     // final UserRead user;
 
@@ -35,45 +37,70 @@ public class ExampleApplication {
 			.withDebugMode(true)
 			.build()
         );
-		
-
-        // try {
-        //     // typically you would sync a user to the permission system
-        //     // and assign an initial role when the user signs up to the system
-        //     this.user = permit.api.users.sync(
-        //         // the user "key" is any id that identifies the user uniquely
-        //         // but is typically taken straight from the user JWT `sub` claim
-        //         new UserCreate("[A_USER_ID]")
-        //             .withEmail("user@example.com")
-        //             .withFirstName("Joe")
-        //             .withLastName("Doe")
-        //     ).getResult();
-
-        //     // assign the `admin` role to the user in the `default` tenant
-        //     permit.api.users.assignRole(user.key, "admin", "default");
-        // } catch (IOException | PermitApiError | PermitContextError e) {
-        //     throw new RuntimeException(e);
-        // }
+		/*
+         * Frodo/High Potential: {"sub":"frodo@middle-earth.com","name":"Frodo Baggins","subscription":"High Potential"}
+         * Gimli/Sustain: {"sub":"gimli@middle-earth.com","name":"Gimli","subscription":"Sustain"}
+         * Gandalf/Core: {"sub":"gandalf@middle-earth.com","name":"Gandalf the Grey","subscription":"Core"}
+         * Aragorn/Flagship: {"sub":"aragorn@middle-earth.com","name":"Aragorn","subscription":"Flagship"}
+         */
     }
 
     @GetMapping("/API/{num}")
-    ResponseEntity<String> home(@PathVariable("num") String num, @RequestParam("user") String quser) throws IOException, PermitApiError, PermitContextError {
-        // is `user` allowed to do `action` on `resource`?
-        User user = User.fromString(quser); // pass the user key to init a user from string
-        String action = "GET";
-        Resource resource = new Resource.Builder(String.format("/API/%s", num))
-            .withTenant("default")
+    ResponseEntity<String> home(
+        @PathVariable("num") String num, @RequestParam("user") String quser, @RequestParam(required = false) String segment) throws IOException, PermitApiError, PermitContextError {
+        //Setup the user object
+        User user;
+        if(segment != null && !segment.trim().isEmpty()) { 
+            HashMap<String, Object> userAttributes = new HashMap<>();
+            userAttributes.put("segment", segment);
+
+            user = new User.Builder(quser)
+            .withEmail(quser)
+            .withAttributes(userAttributes)
             .build();
+            // System.out.println(user.getAttributes().toString());
+        }
+        else
+            user = User.fromString(quser); // pass the user key to init a user from string
+        String action = "GET";
+        Resource resource = new Resource.Builder(String.format("api_%s", num))
+            .withTenant("default")
+            .build();            
 
         // to run a permission check, use permit.check()
         boolean permitted = permit.check(user, action, resource);
 
         if (permitted) {
-            return ResponseEntity.status(HttpStatus.OK).body(String.format("%s is PERMITTED to create document!", quser)
+            return ResponseEntity.status(HttpStatus.OK).body(String.format("`%s` IS PERMITTED to GET API %s!", quser, num)
                 
             );
         } else {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(String.format("%s is NOT PERMITTED to create document!", quser)
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(String.format("`%s` is NOT PERMITTED to GET API %s!", quser, num)
+                
+            );
+        }
+    }
+
+    @GetMapping("/dashboard/{name}")
+    ResponseEntity<String> dashboard(
+        @PathVariable("name") String name, @RequestParam("user") String quser, @RequestParam(required = false) String action) throws IOException, PermitApiError, PermitContextError {
+        //Setup the user object
+        User user;
+        user = User.fromString(quser); // pass the user key to init a user from string
+        
+        Resource resource = new Resource.Builder(String.format("Dashboard:%s", name))
+            .withTenant("default")
+            .build();            
+
+        // to run a permission check, use permit.check()
+        boolean permitted = permit.check(user, action, resource);
+
+        if (permitted) {
+            return ResponseEntity.status(HttpStatus.OK).body(String.format("`%s` IS PERMITTED to %s Dashboard %s!", quser, action,name)
+                
+            );
+        } else {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(String.format("`%s` is NOT PERMITTED to %s Dashboard %s!", quser, action, name)
                 
             );
         }
